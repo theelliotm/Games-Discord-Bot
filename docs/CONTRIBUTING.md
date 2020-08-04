@@ -7,6 +7,7 @@
   * [3.1 Contributing Steps](#31-contributing-steps)
   * [3.2 How to submit a Pull Request Properly](#32-submitting-a-pr)
   * [3.3 Testing](#33-testing)
+  * [3.4 Testing Without A Database](#34-testing-without-a-database)
 * [4. Libraries and Workflow](#4-libraries-and-workflow)
   * [4.1 Installing libraries](#41-installing-libraries)
   * [4.2 Workflow and Project Structure](#42-workflow-and-project-structure)
@@ -62,6 +63,13 @@ Once you have an idea, we can begin making changes 😄
 
 ### 3.3 Testing
 Testing is simple. If you're testing a command, simply start up the bot (`start.bat` on Windows) and run it. If you're testing a game, you might need more people. Recruit a friend or someone else ([maybe on the official server?](https://discord.gg/gSeEYNk)) and demo through it several times to knock out any bugs before submission.
+
+### 3.4 Testing Without A Database
+If you need to test without access to a database, comment out the `connection.connect` function in `bot.js`.
+
+Afterwards, comment out the function header for `this.fetchCachedData` under `client.on('message', async msg => {`. Also comment out ```if (!guildData) return;```, ```if (!msg.content.indexOf(guildData.prefix) == 0) return;```, and replace ```let messageArray = msg.content.slice(guildData.prefix.length).split(" ");``` with ```let messageArray = msg.content.split(" ");```
+
+- Note: Commands that require a database, like leaderboard, will not work! Games will most likely error when trying to connect to the database (only when a game ends) as well.
 
 # 4. Libraries and Workflow
 ## 4.1 Installing Libraries
