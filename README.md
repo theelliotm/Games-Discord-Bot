@@ -5,7 +5,7 @@
 The Games Bot is a Discord bot that brings communities together around games. It can help drive engagement through competition for spots on the leaderboard, and allow friends to play simple and fun games together without being in the same room.
 
 ## Usage
-Want to add the Games Bot to your Discord server? [Click Here!](https://discord.com/oauth2/authorize?client_id=724099384081645618&scope=bot&permissions=)
+Want to add the Games Bot to your Discord server? [Click Here!](https://discord.com/oauth2/authorize?client_id=724099384081645618&scope=bot&permissions=8)
 ## Contributing
 I welcome pull requests for anything from a bug fix to a whole new game. 😊 
 
