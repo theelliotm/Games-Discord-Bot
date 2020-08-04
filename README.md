@@ -4,9 +4,11 @@
 
 The Games Bot is a Discord bot that brings communities together around games. It can help drive engagement through competition for spots on the leaderboard, and allow friends to play simple and fun games together without being in the same room.
 
+Currently in Beta!
+
 ## Features
 
-- Ease Of Use: When a player runs a game, a spectator window appears in the channel for viewers to watch, and a corresponding game embed is shown in DMs that contains their hand, color, etc. Players issue game actions in DMs (I plan on allowing actions to be run in the channel was well eventually) and each embed is updated simultaneously. 
+- Ease Of Use: When a player runs a game, a spectator window appears in the channel for viewers to watch, and a corresponding game embed is shown in DMs that contains their hand, color, etc. Players issue game actions in DMs (I plan on allowing actions to be run in the channel as well eventually) and each embed is updated simultaneously. 
 
 - Leaderboards: A player can view their rank on the global and server-level leaderboards. They can be further specified to individual games. In the future, special event leaderboards will be added for server competitions.
 
