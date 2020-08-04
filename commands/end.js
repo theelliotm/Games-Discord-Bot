@@ -17,7 +17,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
     let games = Game.getGames(msg.guild);
 
     //If they did not include an option, they must have wanted to end their own game.
-    if (!option) {
+    if (!option || !isAdmin) {
         //loop through games for theirs
         for (var g in games.array()){
             let _temp = games.array()[g];
@@ -32,8 +32,6 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
         msg.channel.send("❌ You are not running any games.").then(msg2 => msg2.delete({ timeout: 7000 }));
         return;
     }
-
-    if (!isAdmin) return;
 
     if (option == "all") {
         for (var g in games.array()) {
@@ -64,6 +62,5 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
 }
 
 module.exports.info = {
-    name: "end",
-    inDMs: false
+    name: "end"
 }

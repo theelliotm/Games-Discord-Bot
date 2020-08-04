@@ -30,6 +30,5 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
 }
 
 module.exports.info = {
-  names: ["lucky", "shuffle", "random"],
-  inDMs: false
+  names: ["lucky", "shuffle", "random"]
 }

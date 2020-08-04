@@ -12,11 +12,6 @@ const Bot = require("../bot");
  * @param {*} guildData Guild settings where the command was sent. (In this case, the current prefix)
  */
 module.exports.run = async (bot, msg, args, con, guildData) => {
-    const isAdmin = msg.channel.permissionsFor(msg.author).has('ADMINISTRATOR');
-
-    if (!isAdmin) return;
-    //get games in a guild
-
     if(args.length == 0){
         msg.channel.send("❌ Please include a prefix. Maximum of 5 characters.\nIf you want no prefix, specify `NOTHING`. If you want the default, specify `DEFAULT`.").then(msg2 => msg2.delete({ timeout: 7000 }));
         return;
@@ -52,7 +47,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
             return;
         } else {
             Bot.fetchCachedData(msg.guild.id, true);
-            msg.channel.send("✅ Prefix updated.");
+            msg.channel.send("✅ Prefix updated. It might take a moment to take effect.");
             return;
         }
     });
@@ -60,5 +55,5 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
 
 module.exports.info = {
     name: "prefix",
-    inDMs: false
+    adminOnly: true
 }
