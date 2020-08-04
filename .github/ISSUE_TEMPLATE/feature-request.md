@@ -2,7 +2,7 @@
 name: Feature Request
 about: Suggest a game, command, or change for the bot.
 title: ''
-labels: enhancement
+labels: enhancement, not reviewed
 assignees: ''
 
 ---
