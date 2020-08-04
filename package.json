@@ -12,6 +12,7 @@
     "canvas": "^2.6.1",
     "discord.js": "^12.2.0",
     "fs": "0.0.1-security",
+    "lodash": "^4.17.19",
     "mysql": "^2.18.1",
     "openssl": "^1.1.0",
     "openssl-nodejs": "^1.0.5",
