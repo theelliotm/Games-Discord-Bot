@@ -1,7 +1,7 @@
-**Summary of What You Changed**
+**Summary of What Was Changed**
 A quick overview of what you did.
 
-**In-Depth Explanation of What You Changed**
+**In-Depth Explanation of What Was Changed**
 Anything and everything you changed must be documented.
 
 **Other Information**
