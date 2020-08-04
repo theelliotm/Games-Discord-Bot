@@ -102,6 +102,7 @@ client.on('message', async msg => {
 
 			if (rateLimit.has(msg.author.id) && rateLimit.get(msg.author.id) + 5000 > new Date().getTime()) return;
 
+			/*Check Permissions */
 			if (cmdfile.info.perms_needed)
 				if (!msg.channel.permissionsFor(client.user).has(cmdfile.info.perms_needed, true)) {
 					msg.channel.send("❌ I do not have the required permissions to run this command. If you are an admin, please give me the `Administrator` permission.");
@@ -113,8 +114,7 @@ client.on('message', async msg => {
 						return;
 					}
 
-			let args = messageArray.slice(1);
-			cmdfile.run(client, msg, args, connection, guildData);
+			cmdfile.run(client, msg, messageArray.slice(1), connection, guildData);
 			return;
 		}
 	}, function (err) {
