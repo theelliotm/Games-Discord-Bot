@@ -46,7 +46,7 @@ Once you have an idea, we can begin making changes 😄
 2. Create your own branch from `dev` (`master` ONLY if it's a major bug).
 3. Create a token.json file from the templates folder in the root directory. You'll need to add a Discord Bot token and database credientials (if you cannot use a database, [see below]()).
 4. Fix the issue or create the feature with clean and concise code.
-5. Test, test, test! More information [below](#33-testing).
+5. Test, test, test! More information [below](#34-testing-without-a-database).
 6. Document and comment your code.
 
 ### 3.2 Submitting a PR
