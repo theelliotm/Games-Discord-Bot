@@ -20,7 +20,8 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
             .setColor('BLUE')
             .setTitle("Games Help")
             .setDescription("What do you need help with? `" + guildData.prefix + "help [option]`")
-            .addField("Options", ["`Games` - View all games you can play.", "`Player` - Commands related to playing and interacting with games. ", (isAdmin ? "`Admin` - Commands related to administration." : "")]));
+            .addField("Options", ["`Games` - View all games you can play.", "`Player` - Commands related to playing and interacting with games. ", (isAdmin ? "`Admin` - Commands related to administration." : "")])
+            .addField("Not Enough?", "[**Official Discord Server**](https://discord.gg/gSeEYNk)"));
     } else if (option == 'games') {
         msg.channel.send(new Discord.MessageEmbed()
             .setColor('BLUE')

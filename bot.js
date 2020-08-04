@@ -21,6 +21,8 @@ connection.connect(err => {
 
 const client = new Discord.Client();
 const guildCache = new Discord.Collection();
+const messageTimings = new Discord.Collection();
+const rateLimit = new Discord.Collection();
 client.commands = new Discord.Collection(); //Contains files with large commands.
 
 /**
@@ -57,7 +59,7 @@ client.on('message', async msg => {
 	//cannot be in DM, that will be handled with message collectors
 	if (msg.channel.type === "dm") return;
 
-	if(!msg.channel.permissionsFor(client.user).has(['SEND_MESSAGES', 'READ_MESSAGE_HISTORY'], true)) return;
+	if (!msg.channel.permissionsFor(client.user).has(['SEND_MESSAGES', 'READ_MESSAGE_HISTORY'], true)) return;
 
 	//get guild data from cache
 	this.fetchCachedData(msg.guild.id).then(function (guildData) {
@@ -65,32 +67,51 @@ client.on('message', async msg => {
 		if (!guildData) return;
 
 		let _mentions = msg.mentions.users.keyArray();
-
 		if (_mentions.indexOf(client.user.id) > -1 && _mentions.length == 1) {
-			msg.channel.send("My prefix for this guild is " + (guildData.prefix == "" ? "currently nothing." : "`" +  guildData.prefix + "`") + "\nYou can get the prefix at any time by mentioning me.")
+			msg.channel.send("My prefix for this guild is " + (guildData.prefix == "" ? "currently nothing." : "`" + guildData.prefix + "`") + "\nYou can get the prefix at any time by mentioning me.");
 			return;
 		}
 
-		//Check if not command
+		/*Check if not command*/
 		if (!msg.content.indexOf(guildData.prefix) == 0) return;
 
+		if (!messageTimings.has(msg.author.id))
+			messageTimings.set(msg.author.id, []);
+
+		/*Evaluating command*/
 		let messageArray = msg.content.slice(guildData.prefix.length).split(" ");
 		let cmd = messageArray[0];
 		let cmdfile = client.commands.get(cmd);
 		if (cmdfile) {
-			if(!msg.channel.permissionsFor(msg.author).has('ADMINISTRATOR') && cmdfile.info.adminOnly)
+			if (!msg.channel.permissionsFor(msg.author).has('ADMINISTRATOR') && cmdfile.info.adminOnly)
 				return;
 
+			/*Rate Limiting*/
+			messageTimings.get(msg.author.id).unshift(new Date().getTime());
+			messageTimings.get(msg.author.id).splice(3); /*limit to 3 messages to spam*/
+
+			let isRateLimiting = [];
+			if (messageTimings.get(msg.author.id).length >= 3)
+				for (let i = 0; i < messageTimings.get(msg.author.id).length - 1; i++)
+					isRateLimiting[i] = (messageTimings.get(msg.author.id)[i] - 1000 < messageTimings.get(msg.author.id)[i + 1]);
+
+			if (isRateLimiting.length >= 2 && isRateLimiting.indexOf(false) == -1 && !(rateLimit.has(msg.author.id) && rateLimit.get(msg.author.id) + 5000 > new Date().getTime())) {
+				rateLimit.set(msg.author.id, new Date().getTime());
+				msg.channel.send("⏱ You are being ratelimited!").then(msg2 => msg2.delete({ timeout: 7000 }));
+			}
+
+			if (rateLimit.has(msg.author.id) && rateLimit.get(msg.author.id) + 5000 > new Date().getTime()) return;
+
 			if (cmdfile.info.perms_needed)
-				if(!msg.channel.permissionsFor(client.user).has(cmdfile.info.perms_needed, true)){
+				if (!msg.channel.permissionsFor(client.user).has(cmdfile.info.perms_needed, true)) {
 					msg.channel.send("❌ I do not have the required permissions to run this command. If you are an admin, please give me the `Administrator` permission.");
 					return;
 				}
-			else
-				if(!msg.channel.permissionsFor(client.user).has('ADMINISTRATOR')){
-					msg.channel.send("❌ I do not have the required permissions to run this command. If you are an admin, please give me the `Administrator` permission.");
-					return;
-				}
+				else
+					if (!msg.channel.permissionsFor(client.user).has('ADMINISTRATOR')) {
+						msg.channel.send("❌ I do not have the required permissions to run this command. If you are an admin, please give me the `Administrator` permission.");
+						return;
+					}
 
 			let args = messageArray.slice(1);
 			cmdfile.run(client, msg, args, connection, guildData);
