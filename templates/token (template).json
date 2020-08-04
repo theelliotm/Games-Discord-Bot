@@ -1,0 +1,8 @@
+{
+  "token" : "The Discord Bot token to test your bot with.",
+  "pass" : "Database password.",
+  "database" : "The database name.",
+  "databaseuser": "The username for the database.",
+  "host": "The database IP address.",
+  "port": "The database port."
+}
