@@ -11,10 +11,6 @@ const Game = require("./play")
  */
 //TODO make non admin version that does not display ID, only 1,2,etc
 module.exports.run = async (bot, msg, args, con) => {
-    const isAdmin = msg.channel.permissionsFor(msg.author).has('ADMINISTRATOR');
-
-    if (!isAdmin) return;
-
     let games = Game.getGames(msg.guild);
 
     var embed = new Discord.MessageEmbed();
@@ -40,5 +36,5 @@ module.exports.run = async (bot, msg, args, con) => {
 
 module.exports.info = {
     name: "current",
-    inDMs: false
+    adminOnly: true
 }

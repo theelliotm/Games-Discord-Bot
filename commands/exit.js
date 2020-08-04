@@ -53,6 +53,5 @@ module.exports.run = async (bot, msg, args, con) => {
 }
 
 module.exports.info = {
-    name: "exit",
-    inDMs: false
+    name: "exit"
 }

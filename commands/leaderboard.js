@@ -157,6 +157,5 @@ function getDataFromUser(rows, userid) {
 }
 
 module.exports.info = {
-    names: ["leader", "leaderboard", "leaders", "leaderboards"],
-    inDMs: false
+    names: ["leader", "leaderboard", "leaders", "leaderboards"]
 }

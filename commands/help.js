@@ -51,6 +51,5 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
 }
 
 module.exports.info = {
-    names: ["help", "?"],
-    inDMs: false
+    names: ["help", "?"]
 }

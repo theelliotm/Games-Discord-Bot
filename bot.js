@@ -57,9 +57,10 @@ client.on('message', async msg => {
 	//cannot be in DM, that will be handled with message collectors
 	if (msg.channel.type === "dm") return;
 
+	if(!msg.channel.permissionsFor(client.user).has(['SEND_MESSAGES', 'READ_MESSAGE_HISTORY'], true)) return;
+
 	//get guild data from cache
 	this.fetchCachedData(msg.guild.id).then(function (guildData) {
-
 		//Check if its inplayu a guild
 		if (!guildData) return;
 
@@ -77,13 +78,24 @@ client.on('message', async msg => {
 		let cmd = messageArray[0];
 		let cmdfile = client.commands.get(cmd);
 		if (cmdfile) {
-			if (cmdfile.info.inDMs)
-				if (cmdfile.info.inDMs != isDms) return;
+			if(!msg.channel.permissionsFor(msg.author).has('ADMINISTRATOR') && cmdfile.info.adminOnly)
+				return;
+
+			if (cmdfile.info.perms_needed)
+				if(!msg.channel.permissionsFor(client.user).has(cmdfile.info.perms_needed, true)){
+					msg.channel.send("❌ I do not have the required permissions to run this command. If you are an admin, please give me the `Administrator` permission.");
+					return;
+				}
+			else
+				if(!msg.channel.permissionsFor(client.user).has('ADMINISTRATOR')){
+					msg.channel.send("❌ I do not have the required permissions to run this command. If you are an admin, please give me the `Administrator` permission.");
+					return;
+				}
+
 			let args = messageArray.slice(1);
 			cmdfile.run(client, msg, args, connection, guildData);
 			return;
 		}
-
 	}, function (err) {
 		console.log(err);
 	});
