@@ -1,0 +1,20 @@
+{
+  "name": "gamesbot",
+  "version": "0.2.1.0",
+  "description": "A Discord bot dedicated to providing fun for server members through games.",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Xcallibur",
+  "license": "ISC",
+  "dependencies": {
+    "canvas": "^2.6.1",
+    "discord.js": "^12.2.0",
+    "fs": "0.0.1-security",
+    "mysql": "^2.18.1",
+    "openssl": "^1.1.0",
+    "openssl-nodejs": "^1.0.5",
+    "utf8": "^3.0.0"
+  }
+}
