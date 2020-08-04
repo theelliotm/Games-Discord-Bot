@@ -33,7 +33,7 @@ Please see the [contributing guidelines](https://github.com/Xcallibur232/Games-D
 - Allow moderators to add an "event" leaderboard that can be reset.
 
 ## Community & Support
-Visit the [Discord server](https://discord.gg/gseeynk) to talk with the owner (👋) and other community members, discuss new features, and get help with contributing.
+Visit the [Discord server](https://discord.gg/gSeEYNk) to talk with the owner (👋) and other community members, discuss new features, and get help with contributing.
 
 ## License
 [ISC](https://www.isc.org/licenses/)
