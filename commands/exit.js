@@ -9,7 +9,7 @@ const Game = require("./play")
  * @param {*} msg The command message.
  * @param {*} args The arguments on the command.
  */
-module.exports.run = async (bot, msg, args, con) => {
+module.exports.run = async (bot, msg, args) => {
     const option = args[0] ? args[0].toLowerCase() : null;
     const isAdmin = msg.channel.permissionsFor(msg.author).has('ADMINISTRATOR');
 

@@ -2,6 +2,7 @@
 //# © 2020 Xcallibur
 
 const Discord = require("discord.js");
+const Bot = require("../bot");
 
 const cooldown = 4000;
 var cooldownPlayers = new Discord.Collection();
@@ -11,7 +12,7 @@ var cooldownPlayers = new Discord.Collection();
  * @param {*} bot The bot client.
  * @param {*} msg The command message.
  */
-module.exports.run = async (bot, msg, args, con, guildData) => {
+module.exports.run = async (bot, msg, args, guildData) => {
     let option = args[0] ? args[0].toLowerCase() : null; 
     let hasEvent = (guildData.eventID && guildData.eventName);
 
@@ -34,7 +35,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
 
                 let gameTotal;
                 try {
-                    gameTotal = await this.getEventGameCount(con, msg.guild.id, guildData.eventID, guildData.eventGame);
+                    gameTotal = await this.getEventGameCount(msg.guild.id, guildData.eventID, guildData.eventGame);
                 } catch (e){
                     console.log(e);
                     gameTotal = "❌ Error";
@@ -57,14 +58,13 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
 
 /**
  * Gets the amount of games a guild's event has had so far.
- * @param {*} con Database connection
  * @param {*} guildID ID of the server
  * @param {*} eventID ID of the event
  */
-module.exports.getEventGameCount = async (con, guildID, eventID, gameType) => {
+module.exports.getEventGameCount = async (guildID, eventID, gameType) => {
     return new Promise(function (resolve, reject) {
-        if(!eventID || !guildID || !con) reject();
-        con.query(`SELECT COUNT(event_id) AS gameCount FROM games WHERE guild_id = ? AND event_id = ?` + (gameType ? ` AND game_type = ?` : ``) + `;`, [guildID, eventID, gameType], async (err, rows) => {
+        if(!eventID || !guildID) reject();
+        Bot.query(`SELECT COUNT(event_id) AS gameCount FROM games WHERE guild_id = ? AND event_id = ?` + (gameType ? ` AND game_type = ?` : ``) + `;`, [guildID, eventID, gameType], async (err, rows) => {
             if (err || rows.length < 1) 
                 reject();
             else

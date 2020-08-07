@@ -8,10 +8,9 @@ const Bot = require("../bot");
  * Forces a recache of the guild data.
  * @param {*} msg The command message.
  * @param {*} args The arguments after the command, in an array.
- * @param {*} con The SQL connection for database access.
  * @param {*} guildData Guild settings where the command was sent. (In this case, the current prefix)
  */
-module.exports.run = async (bot, msg, args, con, guildData) => {
+module.exports.run = async (bot, msg, args, guildData) => {
     if(args.length == 0){
         msg.channel.send("❌ Please include a prefix. Maximum of 5 characters.\nIf you want no prefix, specify `NOTHING`. If you want the default, specify `DEFAULT`.").then(msg2 => msg2.delete({ timeout: 7000 }));
         return;
@@ -40,7 +39,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
         return;
     }
 
-    con.query(`UPDATE guilds SET prefix = ?, last_updated = ? WHERE id = ?`, [prefix, new Date().getTime(), msg.guild.id], (err) => {
+    Bot.query(`UPDATE guilds SET prefix = ?, last_updated = ? WHERE id = ?`, [prefix, new Date().getTime(), msg.guild.id], (err) => {
         if (err) {
             console.log(err);
             msg.channel.send("❌ An error occurred.");

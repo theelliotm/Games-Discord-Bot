@@ -11,7 +11,7 @@ const Game = require("./play")
  * @param {*} args The arguments used to specify which help embed to display.
  * @param {*} guildData The cached data for the guild this message is coming from. (In this case, it uses the prefix)
  */
-module.exports.run = async (bot, msg, args, con, guildData) => {
+module.exports.run = async (bot, msg, args, guildData) => {
     const option = args[0] ? args[0].toLowerCase() : null;
     const isAdmin = msg.channel.permissionsFor(msg.author).has('ADMINISTRATOR');
 

@@ -6,17 +6,12 @@ const mysql = require("mysql");
 const token = require("./token.json");
 const fs = require("fs");
 
-const connection = mysql.createConnection({
+const pool = mysql.createPool({
 	host: token.host,
 	user: token.databaseuser,
 	password: token.pass,
 	database: token.database,
 	port: token.port
-});
-
-connection.connect(err => {
-	if (err) throw err;
-	console.log("Connection With Database Established.");
 });
 
 const client = new Discord.Client();
@@ -115,7 +110,7 @@ client.on('message', async msg => {
 				}
 			}
 
-			cmdfile.run(client, msg, messageArray.slice(1), connection, guildData);
+			cmdfile.run(client, msg, messageArray.slice(1), guildData);
 			return;
 		}
 	}, function (err) {
@@ -141,13 +136,18 @@ module.exports.fetchCachedData = async (id, force) => {
 			if (!client.guilds.resolveID(id))
 				reject("Could not resolve guild.");
 
-			connection.query(`SELECT * FROM guilds WHERE id = '${id}'`, (err, rows) => {
-				if (err) reject(err);
+			pool.query(`SELECT * FROM guilds WHERE id = '${id}'`, (err, rows) => {
+				if (err){ reject(err); return; }
 
 				let _prefix = 'g!', _lastUpdated = new Date().getTime(), _eventID = null, _eventName = null, _eventPaused = false, _eventGame = null;
 
+				if(!rows) {
+					reject("No rows...");
+					return;
+				}
+
 				if (rows.length < 1)
-					connection.query(`INSERT INTO guilds (id, prefix) VALUES (?, 'g!')`, [id], (_err, _rows) => { }); //if data is not found, insert defaults
+					pool.query(`INSERT INTO guilds (id, prefix) VALUES (?, 'g!')`, [id], (_err, _rows) => { }); //if data is not found, insert defaults
 				else {
 					_prefix = rows[0].prefix;
 					_lastUpdated = rows[0].last_updated;
@@ -173,3 +173,31 @@ module.exports.fetchCachedData = async (id, force) => {
 		}
 	});
 }
+
+/**
+ * @author Adam Yost
+ */
+module.exports.query = function () {
+	var sql_args = [];
+	var args = [];
+	for (var i = 0; i < arguments.length; i++)
+		args.push(arguments[i]);
+	var callback = args[args.length - 1]; //last arg is callback
+	pool.getConnection(function (err, connection) {
+		if (err) {
+			console.log(err);
+			return callback(err);
+		}
+		if (args.length > 2) {
+			sql_args = args[1];
+		}
+		connection.query(args[0], sql_args, function (err, results) {
+			connection.release(); // always put connection back in pool after last query
+			if (err) {
+				console.log(err);
+				return callback(err);
+			}
+			callback(null, results);
+		});
+	});
+};

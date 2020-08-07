@@ -2,7 +2,8 @@
 //# © 2020 Xcallibur
 
 const Discord = require("discord.js");
-const Game = require("./play")
+const Game = require("./play");
+const Bot = require("../bot");
 
 const cooldown = 7000;
 var cooldownPlayers = new Discord.Collection();
@@ -15,10 +16,9 @@ var cooldownPlayers = new Discord.Collection();
  * @param {*} bot The client user.
  * @param {*} msg The command message.
  * @param {*} args The arguments to further specify which leaderboard to display.
- * @param {*} con The database connection.
  * @param {*} guildData The cached guild data. (In this case, the prefix)
  */
-module.exports.run = async (bot, msg, args, con, guildData) => {
+module.exports.run = async (bot, msg, args, guildData) => {
 
     if (args.length == 0) {
         msg.channel.send("❌ Please specify what leaderboard. Options: `(g)lobal` or `(s)erver`").then(msg2 => msg2.delete({ timeout: 7000 }));
@@ -43,7 +43,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
 
         cooldownPlayers.set(msg.author.id, new Date().getTime());
 
-        con.query(`SELECT winner_id AS player, COUNT(*) AS wins FROM games WHERE winner_id IS NOT NULL` + (game ? ` AND game_type = ?` : ``) + ` GROUP BY winner_id ORDER BY wins DESC`, [(game ? game : null)], async (err, rows) => {
+        Bot.query(`SELECT winner_id AS player, COUNT(*) AS wins FROM games WHERE winner_id IS NOT NULL` + (game ? ` AND game_type = ?` : ``) + ` GROUP BY winner_id ORDER BY wins DESC`, [(game ? game : null)], async (err, rows) => {
             if (err) {
                 msg.channel.send("❌ An error occurred.").then(msg2 => msg2.delete({ timeout: 10000 }));
                 return;
@@ -88,7 +88,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
 
         cooldownPlayers.set(msg.author.id, new Date().getTime());
 
-        con.query(`SELECT winner_id AS player, COUNT(*) AS wins FROM games WHERE winner_id IS NOT NULL AND guild_id = ?` + (game ? ` AND game_type = ?` : ``) + ` GROUP BY winner_id ORDER BY wins DESC`, [msg.guild.id, (game ? game : null)], async (err, rows) => {
+        Bot.query(`SELECT winner_id AS player, COUNT(*) AS wins FROM games WHERE winner_id IS NOT NULL AND guild_id = ?` + (game ? ` AND game_type = ?` : ``) + ` GROUP BY winner_id ORDER BY wins DESC`, [msg.guild.id, (game ? game : null)], async (err, rows) => {
             if (err) {
                 msg.channel.send("❌ An error occurred.").then(msg2 => msg2.delete({ timeout: 10000 }));
                 return;

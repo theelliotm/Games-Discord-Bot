@@ -1,6 +1,6 @@
 {
   "name": "gamesbot",
-  "version": "0.2.1.0",
+  "version": "0.2.2.0",
   "description": "A Discord bot dedicated to providing fun for server members through games.",
   "main": "bot.js",
   "scripts": {

@@ -8,7 +8,7 @@ const { truncateSync } = require("fs");
 
 const types = ['r', 'g', 'b', 'y', 'w'];
 
-module.exports.run = async (bot, id, gmsg, con) => {
+module.exports.run = async (bot, id, gmsg) => {
   let game = GameJS.vars.currentGames.get(id);
   let embed = gmsg.embeds[0];
   if (game.gametype.name != "UNO" || game.state != 1)
@@ -134,7 +134,7 @@ module.exports.run = async (bot, id, gmsg, con) => {
       for(let g in game.queued)
         game.queued[g].send("⚠ The game has been ended.");
 
-      GameJS.addGameToDatabase(con, id, game, null, game.queued.map(m => m.id));
+      GameJS.addGameToDatabase(id, game, null, game.queued.map(m => m.id));
       clearInterval(interval);
       return;
     }
@@ -147,7 +147,7 @@ module.exports.run = async (bot, id, gmsg, con) => {
       for(let g in game.queued)
         game.queued[g].send("⚠ The game has ended as not enough players remain.");
 
-      GameJS.addGameToDatabase(con, id, game, null, game.queued.map(m => m.id));
+      GameJS.addGameToDatabase(id, game, null, game.queued.map(m => m.id));
       clearInterval(interval);
       return;
     }
@@ -165,7 +165,7 @@ module.exports.run = async (bot, id, gmsg, con) => {
       game.state = 2;
       embed.setDescription("The game has reached its time limit.");
       gmsg.edit(embed);
-      GameJS.addGameToDatabase(con, id, game, null, game.queued.map(m => m.id));
+      GameJS.addGameToDatabase(id, game, null, game.queued.map(m => m.id));
       clearInterval(interval);
       return;
     }
@@ -409,7 +409,7 @@ module.exports.run = async (bot, id, gmsg, con) => {
           }
         });
         game.state = 2;
-        GameJS.addGameToDatabase(con, id, game, winner, game.queued.map(m => m.id));
+        GameJS.addGameToDatabase(id, game, winner, game.queued.map(m => m.id));
         clearInterval(interval);
       } else {
         embed = new Discord.MessageEmbed()
@@ -436,7 +436,7 @@ module.exports.run = async (bot, id, gmsg, con) => {
 
                 let loadedImgs = [];
                 for (let m in handCards)
-                  loadedImgs.push(Canvas.loadImage("./commands/games/uno/sprites/" + handCards[m] + ".png"));
+                  loadedImgs.push(Canvas.loadImage("./commands/games/uno/" + handCards[m] + ".png"));
 
                 for (let r = 0; r < rows; r++) {
                   for (let c = 0; c < 7; c++) {

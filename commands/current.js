@@ -10,7 +10,7 @@ const Game = require("./play")
  * @param {*} msg The command message.
  */
 //TODO make non admin version that does not display ID, only 1,2,etc
-module.exports.run = async (bot, msg, args, con) => {
+module.exports.run = async (bot, msg) => {
     let games = Game.getGames(msg.guild);
 
     let embed = new Discord.MessageEmbed();

@@ -1,4 +1,4 @@
-# Games Discord Bot ![version](https://img.shields.io/badge/version-0.2.1.0-green)
+# Games Discord Bot ![version](https://img.shields.io/badge/version-0.2.2.0-green)
 
 ![logo](https://i.imgur.com/QQ4rC9b.png)
 

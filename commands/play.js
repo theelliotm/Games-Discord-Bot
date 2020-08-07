@@ -3,7 +3,7 @@
 
 const Discord = require("discord.js");
 const fs = require("fs");
-const Main = require("../bot")
+const Bot = require("../bot");
 
 var currentGames = new Discord.Collection();
 var gameFiles = new Discord.Collection();
@@ -32,7 +32,7 @@ fs.readdir("./commands/games/", (err, files) => {
   });
 });
 
-module.exports.run = async (bot, msg, args, con, guildData) => {
+module.exports.run = async (bot, msg, args, guildData) => {
 
   const option = args[0] ? args.filter(a => !a.startsWith('<@!')).join(" ").toLowerCase() : null;
 
@@ -96,7 +96,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
   }
 }
 
-async function queuegame(instance, con, id, bot) {
+async function queuegame(instance, id, bot) {
   var minutesLeft = 5;
   var secondsLeft = minutesLeft * 60;
   var game = currentGames.get(id);
@@ -168,8 +168,8 @@ async function queuegame(instance, con, id, bot) {
                       game.state = 1;
                       let gfile = gameFiles.get(game.gametype.file);
                       if (gfile) {
-                        instance.addGameToDatabase(con, id, game, game.owner.id, game.queued.map(m => m.id));
-                        gfile.run(bot, id, m, con);
+                        instance.addGameToDatabase(id, game, game.owner.id, game.queued.map(m => m.id));
+                        gfile.run(bot, id, m);
                       }
                       return;
                     }
@@ -222,7 +222,7 @@ async function queuegame(instance, con, id, bot) {
           game.state = 1;
           let gfile = gameFiles.get(game.gametype.file);
           if (gfile)
-            gfile.run(bot, id, m, con);
+            gfile.run(bot, id, m);
         }
       }
 
@@ -238,7 +238,7 @@ async function queuegame(instance, con, id, bot) {
             game.state = 1;
             let gfile = gameFiles.get(game.gametype.file);
             if (gfile)
-              gfile.run(bot, id, m, con);
+              gfile.run(bot, id, m);
           } else {
             embed.setDescription("😢 Sorry, not enough players joined.");
             game.state = 2;
@@ -280,8 +280,8 @@ module.exports.setGame = (gameID, json) => {
   currentGames.set(gameID, json);
 }
 
-module.exports.addGameToDatabase = async (con, id, game, winner, players) => {
-  con.query(`INSERT INTO games (game_id, game_type, guild_id, winner_id, player_ids, time) VALUES (?, ?, ?, ?, ?, ?)`, [id, game.gametype.name.toLowerCase(), game.guild.id, winner, players.join(","), new Date().getTime()], (err) => {
+module.exports.addGameToDatabase = async (id, game, winner, players) => {
+  Bot.query(`INSERT INTO games (game_id, game_type, guild_id, winner_id, player_ids, time) VALUES (?, ?, ?, ?, ?, ?)`, [id, game.gametype.name.toLowerCase(), game.guild.id, winner, players.join(","), new Date().getTime()], (err) => {
     if (err) {
       game.owner.send("Sorry, an error occurred and your game was not tallied. 😢");
       console.log(err);
