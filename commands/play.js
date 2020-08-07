@@ -246,6 +246,7 @@ async function queuegame(instance, con, id, bot) {
             m.edit(embed);
             for(m in game.dmMessages){
               var __embed = game.dmMessages[m].embed;
+              if(!__embed) continue;
               __embed.setDescription("😢 Sorry, not enough players joined.");
               game.dmMessages[m].edit(__embed);
             }

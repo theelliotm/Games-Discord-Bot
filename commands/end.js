@@ -19,7 +19,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
     //If they did not include an option, they must have wanted to end their own game.
     if (!option || !isAdmin) {
         //loop through games for theirs
-        for (var g in games.array()){
+        for (let g in games.array()){
             let _temp = games.array()[g];
             if (_temp.owner.id == msg.author.id && _temp.state != 2) {
                 _temp.state = 2;
@@ -34,7 +34,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
     }
 
     if (option == "all") {
-        for (var g in games.array()) {
+        for (let g in games.array()) {
             let _temp = games.array()[g];
             _temp.state = 2;
             _temp.timeleft = 0;
@@ -45,7 +45,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
         if (isNaN(option))
             msg.channel.send("❌ That is not a valid numeric ID. To view all games and their IDs, run `" + guildData.prefix + "current`.").then(msg2 => msg2.delete({ timeout: 10000 }));
         else {
-            var game = games.get(option);
+            let game = games.get(option);
 
             if (!game){
                 msg.channel.send("❌ That is not a valid numeric ID. To view all games and their IDs, run `" + guildData.prefix + "current`.").then(msg2 => msg2.delete({ timeout: 10000 }));

@@ -59,7 +59,7 @@ client.on('message', async msg => {
 	//cannot be in DM, that will be handled with message collectors
 	if (msg.channel.type === "dm") return;
 
-	if (!msg.channel.permissionsFor(client.user).has(['SEND_MESSAGES', 'READ_MESSAGE_HISTORY'], true)) return;
+	if (!msg.channel.permissionsFor(client.user).has('SEND_MESSAGES', true)) return;
 
 	//get guild data from cache
 	this.fetchCachedData(msg.guild.id).then(function (guildData) {
@@ -103,16 +103,17 @@ client.on('message', async msg => {
 			if (rateLimit.has(msg.author.id) && rateLimit.get(msg.author.id) + 5000 > new Date().getTime()) return;
 
 			/*Check Permissions */
-			if (cmdfile.info.perms_needed)
+			if (cmdfile.info.perms_needed){
 				if (!msg.channel.permissionsFor(client.user).has(cmdfile.info.perms_needed, true)) {
 					msg.channel.send("❌ I do not have the required permissions to run this command. If you are an admin, please give me the `Administrator` permission.");
 					return;
 				}
-				else
-					if (!msg.channel.permissionsFor(client.user).has('ADMINISTRATOR')) {
-						msg.channel.send("❌ I do not have the required permissions to run this command. If you are an admin, please give me the `Administrator` permission.");
-						return;
-					}
+			} else {
+				if (!msg.channel.permissionsFor(client.user).has('ADMINISTRATOR')) {
+					msg.channel.send("❌ I do not have the required permissions to run this command. If you are an admin, please give me the `Administrator` permission.");
+					return;
+				}
+			}
 
 			cmdfile.run(client, msg, messageArray.slice(1), connection, guildData);
 			return;
@@ -143,19 +144,27 @@ module.exports.fetchCachedData = async (id, force) => {
 			connection.query(`SELECT * FROM guilds WHERE id = '${id}'`, (err, rows) => {
 				if (err) reject(err);
 
-				let _prefix = 'g!', lastUpdated = new Date().getTime();
+				let _prefix = 'g!', _lastUpdated = new Date().getTime(), _eventID = null, _eventName = null, _eventPaused = false, _eventGame = null;
 
 				if (rows.length < 1)
 					connection.query(`INSERT INTO guilds (id, prefix) VALUES (?, 'g!')`, [id], (_err, _rows) => { }); //if data is not found, insert defaults
 				else {
 					_prefix = rows[0].prefix;
-					lastUpdated = rows[0].last_updated;
+					_lastUpdated = rows[0].last_updated;
+					_eventID = rows[0].event_id;
+					_eventName = rows[0].event_name;
+					_eventPaused = rows[0].event_paused;
+					_eventGame = rows[0].event_game;
 				}
 
 				let json = {
 					time: new Date().getTime(),
-					lastUpdated: lastUpdated,
-					prefix: _prefix
+					lastUpdated: _lastUpdated,
+					prefix: _prefix,
+					eventID: _eventID,
+					eventName: _eventName,
+					eventPaused: _eventPaused == 0 ? false : true,
+					eventGame: _eventGame
 				};
 
 				guildCache.set(id, json);
