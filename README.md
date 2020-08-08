@@ -31,7 +31,6 @@ Please see the [contributing guidelines](https://github.com/Xcallibur232/Games-D
 
 ## Roadmap
 - Add a toggle for moderators to allow game actions to be run in the channel instead of in DMs.
-- Allow moderators to add an "event" leaderboard that can be reset.
 - Leveling and profile system.
 
 ## Community & Support
