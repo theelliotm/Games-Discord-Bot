@@ -42,7 +42,7 @@ module.exports.run = async (bot, msg, args, guildData) => {
                 "`" + guildData.prefix + "exit` - Exit current game.",
                 "`" + guildData.prefix + "games` - List available games.",
                 "`" + guildData.prefix + "lucky | shuffle` - Use the randomness machine to choose a game.",
-                "`" + guildData.prefix + "leader | " + guildData.prefix + "leaderboard [server | global] (game)` - View server or global leaderboard. Specify a game to see wins just for that game."]));
+                "`" + guildData.prefix + "leader | " + guildData.prefix + "leaderboard [server | global | event] (game)` - View server, global, or event leaderboard. Specify a game to see wins just for that game."]));
     } else if (option == 'admin') {
         if (!isAdmin) return;
         msg.channel.send(new Discord.MessageEmbed()
@@ -50,6 +50,7 @@ module.exports.run = async (bot, msg, args, guildData) => {
             .setTitle("Admin Command Help")
             .setDescription("Administration commands.")
             .addField("Commands", [
+                "`" + guildData.prefix + "event (info | start | pause | end | reset)` - Start a server wide leaderboard event! You can even choose a specific game to theme it around.", 
                 "`" + guildData.prefix + "current` - Shows all current games, listed by id.", 
                 "`" + guildData.prefix + "end [id | all]` - Ends a game with the id, or all of them.",
                 "`" + guildData.prefix + "prefix [prefix]` - Set the prefix. Mention the bot at anytime to view it. Special cases: `NOTHING` and `DEFAULT`"]));

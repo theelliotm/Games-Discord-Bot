@@ -411,6 +411,7 @@ module.exports.run = async (bot, id, gmsg) => {
         game.state = 2;
         GameJS.addGameToDatabase(id, game, winner, game.queued.map(m => m.id));
         clearInterval(interval);
+        return;
       } else {
         embed = new Discord.MessageEmbed()
           .setAuthor("Current Turn: " + game.queued[turn].tag)

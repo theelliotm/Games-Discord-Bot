@@ -85,6 +85,10 @@ module.exports.run = async (bot, id, gmsg) => {
       game.state = 2;
       embed.setDescription("The game has reached its time limit.");
       gmsg.edit(embed);
+
+      for (let g in game.queued)
+        game.queued[g].send("⚠ The game has reached its time limit.");
+
       GameJS.addGameToDatabase(id, game, null, game.queued.map(m => m.id));
       clearInterval(interval);
       return;
@@ -157,6 +161,7 @@ module.exports.run = async (bot, id, gmsg) => {
             game.state = 2;
             GameJS.addGameToDatabase(id, game, (winner === "AI" ? null : winner.id), game.queued.map(m => m.id));
             clearInterval(interval);
+            return;
           } else updateEmbeds();
         } else {
           let fullRowCount = 0;
@@ -167,6 +172,7 @@ module.exports.run = async (bot, id, gmsg) => {
             game.state = 2;
             GameJS.addGameToDatabase(id, game, null, game.queued.map(m => m.id));
             clearInterval(interval);
+            return;
           }
         } 
 
@@ -186,12 +192,10 @@ module.exports.run = async (bot, id, gmsg) => {
             let _message = game.dmMessages[_m];
             if (_message.channel.recipient) {
               if (game.queued.map(m => m.id).indexOf(_message.channel.recipient.id) > -1) {
-
                 embed.setAuthor(forWinner || tied ? "" : currentPlayer !== "AI" && currentPlayer.id == _message.channel.recipient.id ? "It Is Your Turn!" : "Current Turn: " + (currentPlayer === "AI" ? "AI" : currentPlayer.tag));
                 embed.setDescription(tied ? "**Game is tied!**" : forWinner ? "**WINNER: ** __" + (winner === "AI" ? "AI 🤖" : "<@" + winner.id + ">") + "__" : "In-Game");
                 await game.dmMessages[_m].delete().catch(err => console.log(err));
                 _message.channel.send(embed).then(__m => game.dmMessages[_m] = __m).catch(err => console.log(err));
-                
               }
             }
           }
@@ -229,8 +233,7 @@ module.exports.run = async (bot, id, gmsg) => {
    */
   //TODO slim this down to only calculate from single piece
   function calculateFourInARow() {
-    const HEIGHT = 6;
-    const WIDTH = 7;
+    const HEIGHT = 6, WIDTH = 7;
     for (let r = 0; r < HEIGHT; r++) { // iterate rows, bottom to top
       for (let c = 0; c < WIDTH; c++) { // iterate columns, left to right
         let player = board[r][c];

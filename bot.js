@@ -124,7 +124,7 @@ client.login(token.token)
  * Caches and/or grabs cached data about a guild.
  * @param {*} id The guild ID
  * @param {Boolean} force Wether or not to force the recaching of data. Useful if, for example, an admin updates the prefix and you want it to update immediately.
- * @returns A promise of the guild data.
+ * @returns {Promise} A promise of the guild data.
  */
 module.exports.fetchCachedData = async (id, force) => {
 	return new Promise(function (resolve, reject) {
@@ -163,10 +163,9 @@ module.exports.fetchCachedData = async (id, force) => {
 					prefix: _prefix,
 					eventID: _eventID,
 					eventName: _eventName,
-					eventPaused: _eventPaused == 0 ? false : true,
+					eventPaused: _eventPaused === 1 ? true : false,
 					eventGame: _eventGame
 				};
-
 				guildCache.set(id, json);
 				resolve(json);
 			});
@@ -200,4 +199,17 @@ module.exports.query = function () {
 			callback(null, results);
 		});
 	});
+};
+
+/**
+ * Generates a random number with the specified amount of symbols.
+ * @param {Number} count 
+ * @returns {String} id
+ */
+module.exports.generate = (count) => {
+	var _sym = '1234567890';
+	var str = '';
+	for (var i = 0; i < count; i++)
+	  str += _sym[parseInt(Math.random() * (_sym.length))];
+	return str;
 };
