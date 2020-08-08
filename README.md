@@ -1,4 +1,4 @@
-# Games Discord Bot ![version](https://img.shields.io/badge/version-0.2.1.0-green)
+# Games Discord Bot ![version](https://img.shields.io/badge/version-0.2.2.0-green)
 
 ![logo](https://i.imgur.com/QQ4rC9b.png)
 
@@ -21,6 +21,7 @@ Want to add the Games Bot to your Discord server? [Click Here!](https://discord.
 
 - Uno
 - Connect Four
+- Checkers (Coming Soon!)
 - More Soon!
 
 ## Contributing
@@ -31,6 +32,7 @@ Please see the [contributing guidelines](https://github.com/Xcallibur232/Games-D
 ## Roadmap
 - Add a toggle for moderators to allow game actions to be run in the channel instead of in DMs.
 - Allow moderators to add an "event" leaderboard that can be reset.
+- Leveling and profile system.
 
 ## Community & Support
 Visit the [Discord server](https://discord.gg/gSeEYNk) to talk with the owner (👋) and other community members, discuss new features, and get help with contributing.

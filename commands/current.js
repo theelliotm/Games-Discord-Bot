@@ -10,16 +10,16 @@ const Game = require("./play")
  * @param {*} msg The command message.
  */
 //TODO make non admin version that does not display ID, only 1,2,etc
-module.exports.run = async (bot, msg, args, con) => {
+module.exports.run = async (bot, msg) => {
     let games = Game.getGames(msg.guild);
 
-    var embed = new Discord.MessageEmbed();
+    let embed = new Discord.MessageEmbed();
     embed.setColor('ORANGE')
     embed.setTitle('Current Games')
     let c = 0;
-    for (var g in games.array()) {
-        var id = games.keyArray()[g];
-        var game = games.array()[g];
+    for (let g in games.array()) {
+        let id = games.keyArray()[g];
+        let game = games.array()[g];
         if (game.state == 2) continue;
         c++;
         embed.addField('`' + id + '`', [

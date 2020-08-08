@@ -3,14 +3,13 @@
 
 const Discord = require("discord.js")
 const Game = require("./play")
-const Main = require("../bot")
 
 /**
  * Displays the list of all available games.
  * @param {*} msg The command message.
  * @param {*} guildData The cached data for the guild this was sent in. (In this case, it needs the prefix)
  */
-module.exports.run = async (bot, msg, args, con, guildData) => {
+module.exports.run = async (bot, msg, args, guildData) => {
     msg.channel.send(new Discord.MessageEmbed()
         .setColor('BLUE')
         .setTitle("Game List")

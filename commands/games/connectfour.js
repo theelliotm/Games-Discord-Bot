@@ -2,10 +2,11 @@
 //# © 2020 Xcallibur
 
 const Discord = require("discord.js");
-const Canvas = require("canvas");
 const GameJS = require("../play.js");
+const Token = require("../../token.json");
+const fetch = require("node-fetch");
 
-module.exports.run = async (bot, id, gmsg, con) => {
+module.exports.run = async (bot, id, gmsg) => {
   let game = GameJS.vars.currentGames.get(id);
   let embed = gmsg.embeds[0];
   if (game.gametype.name != "Connect Four" || game.state != 1)
@@ -59,7 +60,7 @@ module.exports.run = async (bot, id, gmsg, con) => {
       for (let g in game.queued)
         game.queued[g].send("⚠ The game has been ended.");
 
-      GameJS.addGameToDatabase(con, id, game, null, game.queued.map(m => m.id));
+      GameJS.addGameToDatabase(id, game, null, game.queued.map(m => m.id));
       clearInterval(interval);
       return;
     }
@@ -72,36 +73,40 @@ module.exports.run = async (bot, id, gmsg, con) => {
       for (let g in game.queued)
         game.queued[g].send("⚠ The game has ended as not enough players remain.");
 
-      GameJS.addGameToDatabase(con, id, game, null, game.queued.map(m => m.id));
+      GameJS.addGameToDatabase(id, game, null, game.queued.map(m => m.id));
       clearInterval(interval);
       return;
     }
 
     time++;
     timeSinceLastAction++;
-    
+
     if (time > 3600) {
       game.state = 2;
       embed.setDescription("The game has reached its time limit.");
       gmsg.edit(embed);
-      GameJS.addGameToDatabase(con, id, game, null, game.queued.map(m => m.id));
+
+      for (let g in game.queued)
+        game.queued[g].send("⚠ The game has reached its time limit.");
+
+      GameJS.addGameToDatabase(id, game, null, game.queued.map(m => m.id));
       clearInterval(interval);
       return;
     }
 
-    if(timeSinceLastAction > 150 && !warned && currentPlayer !== "AI"){
+    if (timeSinceLastAction > 150 && !warned && currentPlayer !== "AI") {
       currentPlayer.send("⌛ You have 30 seconds to move before your turn is forfeited.").then(msg2 => msg2.delete({ timeout: 7000 }));
       warned = true;
     }
 
     if (timeSinceLastAction > 180) {
-      if(currentPlayer !== "AI"){
+      if (currentPlayer !== "AI") {
         lastAction = "<@!" + currentPlayer.id + "> forfeited their turn.";
         forfeits.set(currentPlayer.id, forfeits.has(currentPlayer.id) ? forfeits.get(currentPlayer.id) + 1 : 1);
-        if(forfeits.get(currentPlayer.id) >= 3){
+        if (forfeits.get(currentPlayer.id) >= 3) {
           currentPlayer.send("⌛ You forfeited the game.");
           let other = game.queued[currentPlayer.id === game.queued[0].id ? isAI ? "AI" : 1 : 0];
-          if(other !== "AI") other.send("⚠ The other player forfeited the game.");
+          if (other !== "AI") other.send("⚠ The other player forfeited the game.");
           game.state = 2;
           lastAction = "<@!" + currentPlayer.id + "> forfeited the game."
         } else currentPlayer.send("❌ You waited too long.").then(msg2 => msg2.delete({ timeout: 7000 }));
@@ -110,9 +115,7 @@ module.exports.run = async (bot, id, gmsg, con) => {
       changed = true;
     }
 
-    /*
-     * Reacts when a player sends an action.
-     */
+    /* Reacts when a player sends an action. */
     if (game.actions[totalturns + 1]) {
       let colNumber = game.actions[totalturns + 1];
       if (isNaN(colNumber)) {
@@ -129,7 +132,7 @@ module.exports.run = async (bot, id, gmsg, con) => {
           } else {
             board[colNumber - 1].push(currentPlayer === "AI" || currentPlayer == game.queued[1] ? "y" : "r");
             currentPlayer.send("✅ Played at column **" + colNumber + "**!").then(msg2 => msg2.delete({ timeout: 7000 }));
-            if(forfeits.has(currentPlayer)) forfeits.set(currentPlayer, 0);
+            if (forfeits.has(currentPlayer)) forfeits.set(currentPlayer, 0);
             lastAction = "<@!" + currentPlayer.id + "> played at column **" + colNumber + "**";
             advanceTurn();
             changed = true;
@@ -138,17 +141,15 @@ module.exports.run = async (bot, id, gmsg, con) => {
       }
     }
 
-    // if (currentPlayer === "AI" && !isCalculating && !game.actions[totalturns + 1])
-    //   calculateAIMove();
-
+    /*Checks if winner, and updates image through API */
     if (changed) {
       changed = false;
       let checkWin = calculateFourInARow();
 
-      calcImage().then((imgAttachment) => {
-        if (!imgAttachment)
-          console.log("Error creating connectfour image attachment!");
-          
+      calcImage().then((imgURL) => {
+        if (!imgURL)
+          console.log("Error getting connect four image!");
+
         let winner;
         if (checkWin) {
           if (checkWin === "r")
@@ -158,64 +159,53 @@ module.exports.run = async (bot, id, gmsg, con) => {
           if (winner) {
             updateEmbeds(true);
             game.state = 2;
-            GameJS.addGameToDatabase(con, id, game, (winner === "AI" ? null : winner.id), game.queued.map(m => m.id));
+            GameJS.addGameToDatabase(id, game, (winner === "AI" ? null : winner.id), game.queued.map(m => m.id));
             clearInterval(interval);
-          }
+            return;
+          } else updateEmbeds();
         } else {
-          embed = new Discord.MessageEmbed()
-            .setTitle(embed.title)
-            .addField("Last Action", lastAction, true)
-            .setFooter("Owner: " + game.owner.tag, game.owner.avatarURL());
-          updateEmbeds();
-        }
+          let fullRowCount = 0;
+          board.forEach(col => {if(col.length >= 6) {fullRowCount++}});
+          updateEmbeds(false, fullRowCount >= 7);
+          //tied
+          if(fullRowCount >= 7){
+            game.state = 2;
+            GameJS.addGameToDatabase(id, game, null, game.queued.map(m => m.id));
+            clearInterval(interval);
+            return;
+          }
+        } 
 
         /**
          * Updates spectator and DM embeds with new image and data.
          * @param {boolean} forWinner If the embed needs to display the winner.
          */
-        async function updateEmbeds(forWinner) {
-          let updatedSpectator = false;
+        async function updateEmbeds(forWinner, tied) {
+          embed = new Discord.MessageEmbed()
+            .setTitle(embed.title)
+            .addField("Colors", (!forWinner && !tied && currentPlayer.id === game.queued[0].id ? "**Red:**" : "Red:") + " <@!" + game.queued[0].id + "> " + (!forWinner && !tied && (currentPlayer === "AI" || currentPlayer.id === game.queued[1].id) ? "**Yellow:** " : "Yellow: ") + (game.queued.length > 1 ? "<@!" + game.queued[1].id + ">" : "AI"))
+            .addField("Last Action", lastAction, true)
+            .setFooter("Owner: " + game.owner.tag, game.owner.avatarURL())
+            .setImage(imgURL);  
+
           for (let _m in game.dmMessages) {
             let _message = game.dmMessages[_m];
             if (_message.channel.recipient) {
               if (game.queued.map(m => m.id).indexOf(_message.channel.recipient.id) > -1) {
-                if (currentPlayer !== "AI" && currentPlayer.id == _message.channel.recipient.id)
-                  embed.setAuthor("It Is Your Turn!");
-                else
-                  embed.setAuthor("Current Turn: " + (currentPlayer === "AI" ? "AI" : currentPlayer.tag))
-                embed.setDescription(forWinner ? "**WINNER: ** __" + (winner === "AI" ? "AI 🤖" : "<@" + winner.id + ">") + "__" : "In-Game");
-                if (forWinner) {
-                  embed.spliceFields(0, 2);
-                  embed.addField("Last Action", lastAction, true)
-                  console.log(lastAction);
-                  embed.setAuthor("");
-                } else embed.spliceFields(1, 1);
-
-                embed.addField("Your Color", _message.channel.recipient.id === game.queued[0].id ? "Red" : "Yellow", true);
-                embed.setImage('attachment://checkers-donotshare-' + currentPlayer.id + '.png');
-                await game.dmMessages[_m].delete().catch(console.error);
-                _message.channel.send({ files: [imgAttachment], embed: embed }).then(async function (__dmmsg) {
-                  game.dmMessages[_m] = __dmmsg;
-                  if (!updatedSpectator) {
-                    let att = __dmmsg.embeds[0].image;
-                    if (att) {
-                      embed.setImage(att.url);
-                      embed.spliceFields(1, 1);
-                      embed.setAuthor("Current Turn: " + (currentPlayer === "AI" ? "AI" : currentPlayer.tag));
-                      if (!forWinner)
-                        embed.setDescription("In-Game (Spectator)")
-                      else
-                        embed.setAuthor("");
-                      gmsg.edit(embed);
-                      updatedSpectator = true;
-                    }
-                  }
-                }).catch(console.error);
+                embed.setAuthor(forWinner || tied ? "" : currentPlayer !== "AI" && currentPlayer.id == _message.channel.recipient.id ? "It Is Your Turn!" : "Current Turn: " + (currentPlayer === "AI" ? "AI" : currentPlayer.tag));
+                embed.setDescription(tied ? "**Game is tied!**" : forWinner ? "**WINNER: ** __" + (winner === "AI" ? "AI 🤖" : "<@" + winner.id + ">") + "__" : "In-Game");
+                await game.dmMessages[_m].delete().catch(err => console.log(err));
+                _message.channel.send(embed).then(__m => game.dmMessages[_m] = __m).catch(err => console.log(err));
               }
             }
           }
+
+          //Spectator window
+          embed.setAuthor(forWinner || tied ? "" : "Current Turn: " + (currentPlayer === "AI" ? "AI" : currentPlayer.tag));
+          if(!forWinner && !tied) embed.setDescription("In-Game (Spectator)");
+          gmsg.edit(embed).catch(err => console.log(err));
         }
-      });
+      }).catch(err => console.log(err));
     }
   }, 1000);
 
@@ -243,8 +233,7 @@ module.exports.run = async (bot, id, gmsg, con) => {
    */
   //TODO slim this down to only calculate from single piece
   function calculateFourInARow() {
-    const HEIGHT = 6;
-    const WIDTH = 7;
+    const HEIGHT = 6, WIDTH = 7;
     for (let r = 0; r < HEIGHT; r++) { // iterate rows, bottom to top
       for (let c = 0; c < WIDTH; c++) { // iterate columns, left to right
         let player = board[r][c];
@@ -278,32 +267,36 @@ module.exports.run = async (bot, id, gmsg, con) => {
   }
 
   /**
-   * Promises the creation of a new image of the connect four board. 
-   * @returns A promise of a MessageAttachment that contains an image of the current Connect Four board
+   * Make an API request to my server to create an image of the current board.
+   * API key is private.
+   * @returns A promise of a URL for the current board image. URL will not work (unless cached) in ~15 seconds from creation.
    */
   async function calcImage() {
     return new Promise(function (resolve, reject) {
-      const tokenDiameter = 43, displayDiameter = 46, imageSize = 400, bottomMargin = 33, leftMargin = 10, xSpace = 13, ySpace = 16;
-      const canvas = Canvas.createCanvas(imageSize, imageSize);
-      const ctx = canvas.getContext('2d');
 
-      Canvas.loadImage("./commands/games/connectfour/red.png").then(tokenRed => {
-        Canvas.loadImage("./commands/games/connectfour/yellow.png").then(tokenYellow => {
-          Canvas.loadImage("./commands/games/connectfour/board.png").then(boardSprite => {
-            if (boardSprite) {
-              boardSprite.onerror = err => { throw err; };
-              ctx.drawImage(boardSprite, 0, 0, imageSize, imageSize);
-            } else reject("Could not find board sprite");
+      let boardString = "";
+      board.forEach(col => boardString += col.join(',') + ";");
+      if(boardString === ';;;;;;;'){
+        resolve('https://xcal.dev/x/gamesbot/connectfour/board.png');
+        return;
+      }
 
-            for (let _x = 0; _x < 7; _x++)
-              for (let _y = 0; _y < 6; _y++)
-                if (board[_x][_y])
-                  ctx.drawImage(board[_x][_y] === "r" ? tokenRed : tokenYellow, leftMargin + ((xSpace + tokenDiameter) * _x), imageSize - bottomMargin - ((ySpace + tokenDiameter) * _y) - tokenDiameter, displayDiameter, displayDiameter);
-
-            resolve(new Discord.MessageAttachment(canvas.toBuffer(), 'checkers-donotshare-' + currentPlayer.id + '.png'));
-          });
-        });
-      });
+      fetch('https://xcal.dev/gamesbot/api/connectfour?key=' + Token.apikey + '&board=' + boardString).then(response => {
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          reject("Oops, we haven't got JSON!");
+          return;
+        }
+        return response.json();
+      }).then(data => {
+        if (data.url) {
+          resolve(data.url);
+          return;
+        } else {
+          reject("No URL!");
+          return;
+        }
+      }).catch(error => console.error(error));
     });
   }
 
@@ -312,7 +305,7 @@ module.exports.run = async (bot, id, gmsg, con) => {
    */
   function advanceTurn(isForfeit) {
     warned = false;
-    if(!isForfeit) totalturns++;
+    if (!isForfeit) totalturns++;
     timeSinceLastAction = 0;
     changed = true;
     if (isAI === true)

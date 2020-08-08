@@ -2,7 +2,8 @@
 //# © 2020 Xcallibur
 
 const Discord = require("discord.js");
-const Game = require("./play")
+const Game = require("./play");
+const Bot = require("../bot");
 
 const cooldown = 7000;
 var cooldownPlayers = new Discord.Collection();
@@ -15,13 +16,12 @@ var cooldownPlayers = new Discord.Collection();
  * @param {*} bot The client user.
  * @param {*} msg The command message.
  * @param {*} args The arguments to further specify which leaderboard to display.
- * @param {*} con The database connection.
  * @param {*} guildData The cached guild data. (In this case, the prefix)
  */
-module.exports.run = async (bot, msg, args, con, guildData) => {
+module.exports.run = async (bot, msg, args, guildData) => {
 
     if (args.length == 0) {
-        msg.channel.send("❌ Please specify what leaderboard. Options: `(g)lobal` or `(s)erver`").then(msg2 => msg2.delete({ timeout: 7000 }));
+        msg.channel.send("❌ Please specify what leaderboard. Options: `(g)lobal`, `(s)erver`, or `(e)vent`").then(msg2 => msg2.delete({ timeout: 7000 }));
         return;
     }
 
@@ -43,7 +43,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
 
         cooldownPlayers.set(msg.author.id, new Date().getTime());
 
-        con.query(`SELECT winner_id AS player, COUNT(*) AS wins FROM games WHERE winner_id IS NOT NULL` + (game ? ` AND game_type = ?` : ``) + ` GROUP BY winner_id ORDER BY wins DESC`, [(game ? game : null)], async (err, rows) => {
+        Bot.query(`SELECT winner_id AS player, COUNT(*) AS wins FROM games WHERE winner_id IS NOT NULL` + (game ? ` AND game_type = ?` : ``) + ` GROUP BY winner_id ORDER BY wins DESC`, [(game ? game : null)], async (err, rows) => {
             if (err) {
                 msg.channel.send("❌ An error occurred.").then(msg2 => msg2.delete({ timeout: 10000 }));
                 return;
@@ -88,7 +88,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
 
         cooldownPlayers.set(msg.author.id, new Date().getTime());
 
-        con.query(`SELECT winner_id AS player, COUNT(*) AS wins FROM games WHERE winner_id IS NOT NULL AND guild_id = ?` + (game ? ` AND game_type = ?` : ``) + ` GROUP BY winner_id ORDER BY wins DESC`, [msg.guild.id, (game ? game : null)], async (err, rows) => {
+        Bot.query(`SELECT winner_id AS player, COUNT(*) AS wins FROM games WHERE winner_id IS NOT NULL AND guild_id = ?` + (game ? ` AND game_type = ?` : ``) + ` GROUP BY winner_id ORDER BY wins DESC`, [msg.guild.id, (game ? game : null)], async (err, rows) => {
             if (err) {
                 msg.channel.send("❌ An error occurred.").then(msg2 => msg2.delete({ timeout: 10000 }));
                 return;
@@ -129,8 +129,59 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
                 .addField("You", "```js\n" + you + "\n```"));
         });
 
+    } else if (option == "event" || option == "e") {
+    
+        if(guildData.eventName && guildData.eventID){
+
+            cooldownPlayers.set(msg.author.id, new Date().getTime());
+
+            Bot.query(`SELECT winner_id AS player, COUNT(*) AS wins FROM games WHERE winner_id IS NOT NULL AND guild_id = ? AND event_id = ?` + (guildData.eventGame || game ? ` AND game_type = ?` : ``) + ` GROUP BY winner_id ORDER BY wins DESC`, [msg.guild.id, guildData.eventID, (guildData.eventGame ? guildData.eventGame : game ?  game : null)], async (err, rows) => {
+                if (err) {
+                    msg.channel.send("❌ An error occurred.").then(msg2 => msg2.delete({ timeout: 10000 }));
+                    return;
+                }
+    
+                for (var r in rows)
+                    rows[r] = {
+                        player: rows[r].player,
+                        wins: rows[r].wins,
+                        index: r
+                    };
+    
+                let author = getDataFromUser(rows, msg.author.id);
+    
+                let topTen = [];
+                let you = author.length > 0 ? getPlacementS(Number(author[0].index) + 1, msg.author.tag, author[0].wins) : getPlacementS(rows.length + 1, msg.author.tag, 0);
+    
+                rows.splice(10);
+    
+                const promises = rows.map(async (rs) => {
+                    if(!rs || !rs.player || !rs.wins)
+                        return;
+                    let user = await bot.users.fetch(rs.player);
+                    return getPlacementS(rows.indexOf(rs) + 1, user.tag, rs.wins);
+                });
+    
+                const users = await Promise.all(promises);
+    
+                for (let u in users)
+                    topTen.push(users[u], "");
+    
+                msg.channel.send(new Discord.MessageEmbed()
+                    .setColor('YELLOW')
+                    .setTitle("** " + guildData.eventName + "** Leaderboard")
+                    .setDescription("Event leaderboard for " + (game && !guildData.eventGame ? "**" + game + "**" : guildData.eventGame ? "**" + guildData.eventGame + "**" : "total") + " wins." + (!game && !guildData.eventGame ? "\nTo view game data, specify a game." : ""))
+                    .setTimestamp()
+                    .addField("Top 10", "```js\n" + (topTen.length > 0 ? topTen.join("\n") : "Play a game to get leaderboard action going!") + "\n```")
+                    .addField("You", "```js\n" + you + "\n```"));
+            });
+
+        } else {
+            msg.channel.send("❌ This server is not participating in an event!").then(msg2 => msg2.delete({ timeout: 10000 }));
+        }
+
     } else {
-        msg.channel.send("❌ The only options are `(g)lobal` or `(s)erver`").then(msg2 => msg2.delete({ timeout: 7000 }));
+        msg.channel.send("❌ The options are `(g)lobal`, `(s)erver`, or `(e)vent`").then(msg2 => msg2.delete({ timeout: 7000 }));
     }
 
 }

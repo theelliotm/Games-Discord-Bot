@@ -9,7 +9,7 @@ const Game = require("./play")
  * @param {*} args The arguments on the command. Only used for admins who want to end games they do not own.
  * @param {*} guildData The cached data for the guild this message is coming from. (In this case, it uses the prefix)
  */
-module.exports.run = async (bot, msg, args, con, guildData) => {
+module.exports.run = async (bot, msg, args, guildData) => {
     const option = args[0] ? args[0].toLowerCase() : null;
     const isAdmin = msg.channel.permissionsFor(msg.author).has('ADMINISTRATOR');
 
@@ -19,7 +19,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
     //If they did not include an option, they must have wanted to end their own game.
     if (!option || !isAdmin) {
         //loop through games for theirs
-        for (var g in games.array()){
+        for (let g in games.array()){
             let _temp = games.array()[g];
             if (_temp.owner.id == msg.author.id && _temp.state != 2) {
                 _temp.state = 2;
@@ -34,7 +34,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
     }
 
     if (option == "all") {
-        for (var g in games.array()) {
+        for (let g in games.array()) {
             let _temp = games.array()[g];
             _temp.state = 2;
             _temp.timeleft = 0;
@@ -45,7 +45,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
         if (isNaN(option))
             msg.channel.send("❌ That is not a valid numeric ID. To view all games and their IDs, run `" + guildData.prefix + "current`.").then(msg2 => msg2.delete({ timeout: 10000 }));
         else {
-            var game = games.get(option);
+            let game = games.get(option);
 
             if (!game){
                 msg.channel.send("❌ That is not a valid numeric ID. To view all games and their IDs, run `" + guildData.prefix + "current`.").then(msg2 => msg2.delete({ timeout: 10000 }));

@@ -3,7 +3,7 @@
 
 const Discord = require("discord.js");
 const fs = require("fs");
-const Main = require("../bot")
+const Bot = require("../bot");
 
 var currentGames = new Discord.Collection();
 var gameFiles = new Discord.Collection();
@@ -32,7 +32,7 @@ fs.readdir("./commands/games/", (err, files) => {
   });
 });
 
-module.exports.run = async (bot, msg, args, con, guildData) => {
+module.exports.run = async (bot, msg, args, guildData) => {
 
   const option = args[0] ? args.filter(a => !a.startsWith('<@!')).join(" ").toLowerCase() : null;
 
@@ -53,7 +53,7 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
   }
   const idx = availableGames.map(m => m.name.toLowerCase()).indexOf(option);
   if (idx > -1) {
-    var id = this.generate(10);
+    var id = Bot.generate(10);
     const pset = new Set(msg.mentions.users.array());
     const psetval = pset.values();
     var parr = [];
@@ -90,13 +90,13 @@ module.exports.run = async (bot, msg, args, con, guildData) => {
     };
 
     currentGames.set(id, game);
-    queuegame(this, con, id, bot);
+    queuegame(this, id, bot);
   } else {
     msg.channel.send("❌ Not a valid game. To view games, run `" + guildData.prefix + "games`").then(msg2 => msg2.delete({ timeout: 7000 }));
   }
 }
 
-async function queuegame(instance, con, id, bot) {
+async function queuegame(instance, id, bot) {
   var minutesLeft = 5;
   var secondsLeft = minutesLeft * 60;
   var game = currentGames.get(id);
@@ -123,7 +123,7 @@ async function queuegame(instance, con, id, bot) {
 
     game.queued[0].send(help).then(msg2 => msg2.delete({ timeout: 600000 }));
 
-    if(game.unqueued.length > 0)
+    if (game.unqueued.length > 0)
       game.queued[0].send("✅ The game will begin soon, come here to view information and play.").then(msg2 => msg2.delete({ timeout: 10000 }));
     else
       game.queued[0].send("✅ The game is beginning! You'll be versing against the 🤖 machine. Good luck.").then(msg2 => msg2.delete({ timeout: 10000 }));
@@ -168,8 +168,7 @@ async function queuegame(instance, con, id, bot) {
                       game.state = 1;
                       let gfile = gameFiles.get(game.gametype.file);
                       if (gfile) {
-                        instance.addGameToDatabase(con, id, game, game.owner.id, game.queued.map(m => m.id));
-                        gfile.run(bot, id, m, con);
+                        gfile.run(bot, id, m);
                       }
                       return;
                     }
@@ -200,29 +199,29 @@ async function queuegame(instance, con, id, bot) {
       } else if (game.state == 2) {
         embed.setDescription("The game was ended.");
         m.edit(embed);
-        for(m in game.dmMessages){
+        for (m in game.dmMessages) {
           game.dmMessages[m].delete();
           game.dmMessages[m].channel.send("⚠ The game has been ended.");
         }
         clearInterval(interval);
         return;
-      } else if ((game.unqueued.length + game.queued.length) < game.gametype.minPlayers){
+      } else if ((game.unqueued.length + game.queued.length) < game.gametype.minPlayers) {
         embed.setDescription("Too many players declined.");
         m.edit(embed);
         game.state = 2;
-        for(m in game.dmMessages){
+        for (m in game.dmMessages) {
           game.dmMessages[m].delete();
           game.dmMessages[m].channel.send("⚠ Too many players declined, the game is over.");
         }
         clearInterval(interval);
         return;
-      } else if (game.unqueued.length === 0){
+      } else if (game.unqueued.length === 0) {
         if (Number(game.queued.length) >= game.gametype.minPlayers) {
           clearInterval(interval);
           game.state = 1;
           let gfile = gameFiles.get(game.gametype.file);
           if (gfile)
-            gfile.run(bot, id, m, con);
+            gfile.run(bot, id, m);
         }
       }
 
@@ -238,14 +237,15 @@ async function queuegame(instance, con, id, bot) {
             game.state = 1;
             let gfile = gameFiles.get(game.gametype.file);
             if (gfile)
-              gfile.run(bot, id, m, con);
+              gfile.run(bot, id, m);
           } else {
             embed.setDescription("😢 Sorry, not enough players joined.");
             game.state = 2;
             game.timeleft = 0;
             m.edit(embed);
-            for(m in game.dmMessages){
+            for (m in game.dmMessages) {
               var __embed = game.dmMessages[m].embed;
+              if (!__embed) continue;
               __embed.setDescription("😢 Sorry, not enough players joined.");
               game.dmMessages[m].edit(__embed);
             }
@@ -255,14 +255,6 @@ async function queuegame(instance, con, id, bot) {
       }
     }, 1000);
   });
-}
-
-module.exports.generate = (count) => {
-  var _sym = '1234567890';
-  var str = '';
-  for (var i = 0; i < count; i++)
-    str += _sym[parseInt(Math.random() * (_sym.length))];
-  return str;
 }
 
 module.exports.getGames = (guildID, all) => {
@@ -279,8 +271,23 @@ module.exports.setGame = (gameID, json) => {
   currentGames.set(gameID, json);
 }
 
-module.exports.addGameToDatabase = async (con, id, game, winner, players) => {
-  con.query(`INSERT INTO games (game_id, game_type, guild_id, winner_id, player_ids, time) VALUES (?, ?, ?, ?, ?, ?)`, [id, game.gametype.name.toLowerCase(), game.guild.id, winner, players.join(","), new Date().getTime()], (err) => {
+module.exports.addGameToDatabase = async (id, game, winner, players) => {
+  let json, inEvent;
+
+  try { json = await Bot.fetchCachedData(game.guild.id) }
+  catch (e) { console.log(e) }
+
+  if (json)
+    if (json.eventID && json.eventName && !json.eventPaused){
+      if (json.eventGame) {
+        if (json.eventGame.toLowerCase() === game.gametype.name.toLowerCase())
+          inEvent = true;
+      } else {
+        inEvent = true;
+      }
+    }
+
+  Bot.query(`INSERT INTO games (game_id, game_type, guild_id, winner_id, player_ids, time, event_id) VALUES (?, ?, ?, ?, ?, ?, ?)`, [id, game.gametype.name.toLowerCase(), game.guild.id, winner, players.join(","), new Date().getTime(), inEvent ? json.eventID : null], (err) => {
     if (err) {
       game.owner.send("Sorry, an error occurred and your game was not tallied. 😢");
       console.log(err);
