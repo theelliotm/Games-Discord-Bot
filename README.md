@@ -33,8 +33,5 @@ Please see the [contributing guidelines](https://github.com/Xcallibur232/Games-D
 - Add a toggle for moderators to allow game actions to be run in the channel instead of in DMs.
 - Leveling and profile system.
 
-## Community & Support
-Visit the [Discord server](https://discord.gg/gSeEYNk) to talk with the owner (👋) and other community members, discuss new features, and get help with contributing.
-
 ## License
 [ISC](https://www.isc.org/licenses/)
