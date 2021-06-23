@@ -2,6 +2,6 @@
 
 **Reporting a Vulnerability**
 
-Email xcalliburbusiness@gmail.com
+Email xcal@xcal.dev
 
 I'll get to you ASAP.
