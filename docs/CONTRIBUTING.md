@@ -62,7 +62,7 @@ Once you have an idea, we can begin making changes 😄
 9. Wait for me to review it.
 
 ### 3.3 Testing
-Testing is simple. If you're testing a command, simply start up the bot (`start.bat` on Windows) and run it. If you're testing a game, you might need more people. Recruit a friend or someone else ([maybe on the official server?](https://discord.gg/gSeEYNk)) and demo through it several times to knock out any bugs before submission.
+Testing is simple. If you're testing a command, simply start up the bot (`start.bat` on Windows) and run it. If you're testing a game, you might need more people. Recruit a friend or someone else and demo through it several times to knock out any bugs before submission.
 
 ### 3.4 Testing Without A Database
 If you need to test without access to a database, comment out the `connection.connect` function in `bot.js`.
@@ -114,6 +114,3 @@ Game sprites should also be located within a folder of the same game name in the
 7. It will be marked as `Not Reviewed` until I can look over it.
 
 **Note:** Any feature requests that are messy or unclear will be disregarded.
-
-# 7. Community
-You can chat with the me and other community members, play games, and recruit testers on our [Discord Server](https://discord.gg/gSeEYNk)! 🙂
